@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { CalendarWidget } from "./CalendarWidget";
 import { ClockWidget } from "./ClockWidget";
 import { CpuWidget } from "./CpuWidget";
+import { McpWidget } from "./McpWidget";
 import { NetworkWidget } from "./NetworkWidget";
 import { RamWidget } from "./RamWidget";
 import { ShortcutsWidget } from "./ShortcutsWidget";
@@ -16,4 +17,5 @@ export const WIDGET_REGISTRY: Record<string, ComponentType<{ settings?: Record<s
   weather: WeatherWidget,
   network: NetworkWidget,
   shortcuts: ShortcutsWidget,
+  mcp: McpWidget,
 };

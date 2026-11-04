@@ -3,11 +3,11 @@ resolver = "2"
 members = ["crates/d82-core", "src-tauri"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 authors = ["DivisionT82 contributors"]
-repository = "https://github.com/YOUR_GITHUB_USER/divisiont82"
+repository = "https://github.com/rtostudioco/divisiont82"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

@@ -17,6 +17,31 @@ fn panel_label(id: &str) -> String {
     format!("panel-{id}")
 }
 
+/// Hides every `panel-*` window, or shows them all again if none is visible.
+/// Returns the resulting visibility state. Bound to `ctrl+alt+d`.
+#[tauri::command]
+pub fn toggle_all_panels(app: AppHandle) -> Result<bool, String> {
+    let panels: Vec<_> = app
+        .webview_windows()
+        .into_iter()
+        .filter(|(label, _)| label.starts_with("panel-"))
+        .collect();
+    if panels.is_empty() {
+        return Ok(false);
+    }
+    let any_visible = panels
+        .iter()
+        .any(|(_, window)| window.is_visible().unwrap_or(false));
+    for (_, window) in &panels {
+        let _ = if any_visible {
+            window.hide()
+        } else {
+            window.show()
+        };
+    }
+    Ok(!any_visible)
+}
+
 #[tauri::command]
 pub fn open_panel(
     app: AppHandle,

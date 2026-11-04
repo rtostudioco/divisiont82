@@ -142,7 +142,7 @@ fn default_layout_roundtrips_through_json() {
 fn default_layout_is_sane() {
     let layout = Layout::default_layout();
     assert_eq!(layout.theme_id, "obsidian");
-    assert_eq!(layout.panels.len(), 3);
+    assert_eq!(layout.panels.len(), 5);
     for panel in &layout.panels {
         assert!(!panel.widgets.is_empty(), "panel {} has no widgets", panel.id);
         assert!(panel.width >= 200 && panel.height >= 100);
@@ -154,7 +154,8 @@ fn default_layout_is_sane() {
 #[test]
 fn widget_kinds_are_stable() {
     assert_eq!(WidgetKind::Cpu.as_str(), "cpu");
-    assert_eq!(WidgetKind::all().len(), 7);
+    assert_eq!(WidgetKind::Mcp.as_str(), "mcp");
+    assert_eq!(WidgetKind::all().len(), 8);
     // serde uses kebab-case
     let kind: WidgetKind = serde_json::from_str("\"shortcuts\"").unwrap();
     assert_eq!(kind, WidgetKind::Shortcuts);

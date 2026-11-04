@@ -120,8 +120,8 @@ function callTool(name: string, args: Record<string, unknown>): unknown {
     case "shell_status":
       return {
         name: "DivisionT82",
-        stage: "A — monorepo",
-        version: "0.1.0",
+        stage: "B — native surface",
+        version: "0.2.0",
         protocolVersion: PROTOCOL_VERSION,
         capabilities: ["themes", "metrics-simulated", "status"],
         themeCount: listThemeFiles().length,
@@ -139,7 +139,7 @@ function respond(msg: JsonRpcRequest): string | null {
       result: {
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: {} },
-        serverInfo: { name: "divisiont82-mcp", version: "0.1.0" },
+        serverInfo: { name: "divisiont82-mcp", version: "0.2.0" },
       },
     });
   }

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Cpu, CloudSun, CalendarDays, Clock3, Rocket, Palette, Wifi } from "lucide-react";
+import { Bot, CloudSun, CalendarDays, Clock3, Cpu, Eye, Rocket, Palette, Wifi } from "lucide-react";
 import { useTheme } from "../themes/ThemeProvider";
 
 interface DockProps {
   openPanels: Record<string, boolean>;
   togglePanel: (id: string) => void;
+  onToggleHolo: () => void;
 }
 
 const PANEL_BUTTONS = [
@@ -12,12 +13,13 @@ const PANEL_BUTTONS = [
   { id: "panel-time", icon: Clock3, label: "CHRONO" },
   { id: "panel-env", icon: CloudSun, label: "ENVIRONMENT" },
   { id: "panel-launch", icon: Rocket, label: "LAUNCHPAD" },
+  { id: "panel-mcp", icon: Bot, label: "AI CORE" },
 ];
 
 /**
  * Floating holo dock: panel switches + theme pack switcher.
  */
-export function Dock({ openPanels, togglePanel }: DockProps) {
+export function Dock({ openPanels, togglePanel, onToggleHolo }: DockProps) {
   const { themes, theme, setTheme } = useTheme();
   const [pickerOpen, setPickerOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -49,6 +51,15 @@ export function Dock({ openPanels, togglePanel }: DockProps) {
       ))}
 
       <div className="holo-dock__sep" />
+
+      <button
+        className="holo-dock__btn"
+        onClick={onToggleHolo}
+        aria-label="Pause holo layer (ctrl+alt+v)"
+      >
+        <Eye size={17} />
+        <span className="holo-dock__tooltip">HOLO PAUSE</span>
+      </button>
 
       <button
         className={`holo-dock__btn ${pickerOpen ? "holo-dock__btn--active" : ""}`}

@@ -6,8 +6,8 @@
 
 *Not an OS. Not a compositor. A shell that floats on top of yours.*
 
-[![CI](https://github.com/YOUR_GITHUB_USER/divisiont82/actions/workflows/ci.yml/badge.svg)](./.github/workflows/ci.yml)
-[![Release](https://github.com/YOUR_GITHUB_USER/divisiont82/actions/workflows/release.yml/badge.svg)](./.github/workflows/release.yml)
+[![CI](https://github.com/rtostudioco/divisiont82/actions/workflows/ci.yml/badge.svg)](./.github/workflows/ci.yml)
+[![Release](https://github.com/rtostudioco/divisiont82/actions/workflows/release.yml/badge.svg)](./.github/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981.svg)](./LICENSE)
 [![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-22d3ee.svg)](#platform-support)
 [![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri%202-a78bfa.svg)](https://tauri.app)
@@ -70,6 +70,26 @@ list_themes · describe_theme · get_metrics · shell_status
 Point any MCP client at `bun modules/mcp-bridge/src/index.ts` and the shell
 becomes scriptable by agents.
 
+Since **v0.2** the shell is also an **MCP client itself**: the AI Core panel
+spawns the bridge as a child process and speaks JSON-RPC over stdio
+(`mcp_start` / `mcp_stop` / `mcp_status` / `mcp_call`).
+
+## Global shortcuts
+
+Registered natively in Rust (`tauri-plugin-global-shortcut`), emitted to the
+UI as `d82://shortcut` events:
+
+| Combo | Action |
+|---|---|
+| `Ctrl + Alt + D` | Toggle all holo panels |
+| `Ctrl + Alt + T` | Cycle theme pack |
+| `Ctrl + Alt + V` | Pause / restore the holo layer |
+| `Ctrl + Alt + M` | Start / stop the MCP bridge |
+
+Each panel also has a **ghost button** for per-panel click-through
+(`set_ignore_cursor_events`), and the Launchpad opens http(s) links in your
+real browser via the opener plugin.
+
 ## Repository layout
 
 ```
@@ -89,7 +109,7 @@ divisiont82/
 and Tauri v2 [system dependencies](https://tauri.app/start/prerequisites/) for your OS.
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USER/divisiont82
+git clone https://github.com/rtostudioco/divisiont82
 cd divisiont82
 bun install
 
@@ -118,9 +138,9 @@ bun run desktop:build    # → .msi/.exe (Windows), .deb/.AppImage (Linux)
 
 See [`docs/roadmap.md`](docs/roadmap.md). Short version:
 
-- **v0.1** — Theme Engine + Widget Engine + floating panels *(this repo)*
-- **v0.2** — Click-through ambient layers, per-compositor Wayland adapter, MCP host bridge
-- **v0.3** — Python sidecar module SDK, community pack gallery
+- **v0.1** — Theme Engine + Widget Engine + floating panels ✅
+- **v0.2** — Native surface: global shortcuts, MCP live client, editable launchpad, click-through ✅
+- **v0.3** — Agent-controlled shell, Acrylic blur, Wayland layer-shell, Python sidecar SDK
 
 ## Testing philosophy
 

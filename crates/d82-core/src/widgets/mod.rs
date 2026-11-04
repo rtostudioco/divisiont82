@@ -21,6 +21,7 @@ pub enum WidgetKind {
     Calendar,
     Weather,
     Shortcuts,
+    Mcp,
 }
 
 impl WidgetKind {
@@ -34,6 +35,7 @@ impl WidgetKind {
             WidgetKind::Calendar => "calendar",
             WidgetKind::Weather => "weather",
             WidgetKind::Shortcuts => "shortcuts",
+            WidgetKind::Mcp => "mcp",
         }
     }
 
@@ -47,6 +49,7 @@ impl WidgetKind {
             WidgetKind::Calendar => "Calendar",
             WidgetKind::Weather => "Weather",
             WidgetKind::Shortcuts => "Launchpad",
+            WidgetKind::Mcp => "AI Core (MCP)",
         }
     }
 
@@ -59,6 +62,7 @@ impl WidgetKind {
             WidgetKind::Calendar,
             WidgetKind::Weather,
             WidgetKind::Shortcuts,
+            WidgetKind::Mcp,
         ]
     }
 }
@@ -219,6 +223,42 @@ impl Layout {
                             settings: serde_json::json!({}),
                         },
                     ],
+                },
+                Panel {
+                    id: "panel-launch".into(),
+                    title: "LAUNCHPAD".into(),
+                    x: 48,
+                    y: 380,
+                    width: 340,
+                    height: 200,
+                    collapsed: false,
+                    widgets: vec![WidgetInstance {
+                        id: "launch-shortcuts".into(),
+                        kind: WidgetKind::Shortcuts,
+                        x: 0,
+                        y: 0,
+                        width: 1,
+                        height: 1,
+                        settings: serde_json::json!({}),
+                    }],
+                },
+                Panel {
+                    id: "panel-mcp".into(),
+                    title: "AI CORE".into(),
+                    x: 420,
+                    y: 380,
+                    width: 340,
+                    height: 240,
+                    collapsed: false,
+                    widgets: vec![WidgetInstance {
+                        id: "ai-mcp".into(),
+                        kind: WidgetKind::Mcp,
+                        x: 0,
+                        y: 0,
+                        width: 1,
+                        height: 1,
+                        settings: serde_json::json!({}),
+                    }],
                 },
             ],
         }

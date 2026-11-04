@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Minus, Pin } from "lucide-react";
+import { Ghost, Minus, Pin } from "lucide-react";
+import bridge from "../ipc/bridge";
 
 interface PanelProps {
+  id: string;
   title: string;
   initialX: number;
   initialY: number;
@@ -41,6 +43,7 @@ function loadPosition(key: string, fallback: Position): Position {
  * user-side experience and stores geometry for the host.
  */
 export function Panel({
+  id,
   title,
   initialX,
   initialY,
@@ -53,6 +56,13 @@ export function Panel({
   const [pos, setPos] = useState<Position>(() => loadPosition(storageKey, { x: initialX, y: initialY }));
   const [collapsed, setCollapsed] = useState(false);
   const [pinned, setPinned] = useState(true);
+  const [ghost, setGhost] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(`d82.ct.${id}`) === "1";
+    } catch {
+      return false;
+    }
+  });
   const [snapHint, setSnapHint] = useState(false);
   const [entering, setEntering] = useState(true);
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
@@ -78,6 +88,17 @@ export function Panel({
     },
     [storageKey],
   );
+
+  const toggleGhost = () => {
+    const next = !ghost;
+    setGhost(next);
+    try {
+      localStorage.setItem(`d82.ct.${id}`, next ? "1" : "0");
+    } catch {
+      /* private mode */
+    }
+    void bridge.setClickThrough(id, next).catch(() => undefined);
+  };
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("button")) return;
@@ -125,6 +146,7 @@ export function Panel({
         "holo-panel",
         snapHint ? "holo-panel--snap-hint" : "",
         entering ? "holo-panel--enter" : "",
+        ghost ? "holo-panel--ghost" : "",
       ].join(" ")}
       style={{ left: pos.x, top: pos.y, width: initialWidth, height: collapsed ? "auto" : initialHeight }}
       aria-label={`Panel ${title}`}
@@ -144,6 +166,14 @@ export function Panel({
           aria-pressed={pinned}
         >
           <Pin size={12} style={{ opacity: pinned ? 1 : 0.35 }} />
+        </button>
+        <button
+          className="holo-panel__btn"
+          onClick={toggleGhost}
+          title={ghost ? "Click-through ON (Tauri) — clicks pass through" : "Enable click-through (Tauri)"}
+          aria-pressed={ghost}
+        >
+          <Ghost size={12} style={{ opacity: ghost ? 1 : 0.35 }} />
         </button>
         <button className="holo-panel__btn" onClick={() => setCollapsed((c) => !c)} title="Collapse">
           <Minus size={12} style={{ transform: collapsed ? "rotate(-90deg)" : "none", transition: "transform .2s" }} />
