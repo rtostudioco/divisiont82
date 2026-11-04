@@ -1,0 +1,11 @@
+{
+  "name": "@divisiont82/mcp-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DivisionT82 Universal MCP bridge — exposes the shell to AI assistants via Model Context Protocol (stdio, zero dependencies).",
+  "type": "module",
+  "bin": { "divisiont82-mcp": "./src/index.ts" },
+  "scripts": {
+    "start": "bun src/index.ts"
+  }
+}

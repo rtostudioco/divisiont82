@@ -1,0 +1,40 @@
+{
+  "name": "divisiont82",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DivisionT82 — Holographic desktop shell for Windows & Linux. MCP-native.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": ["ui"],
+  "scripts": {
+    "sync:themes": "bun scripts/sync-themes.ts",
+    "validate:themes": "bun scripts/validate-themes.ts",
+    "dev:ui": "bun run sync:themes && cd ui && bun run dev",
+    "build:ui": "bun run sync:themes && cd ui && bun run build",
+    "check:ui": "cd ui && bun run typecheck",
+    "dev": "bun run dev:ui",
+    "test:themes": "bun scripts/validate-themes.ts",
+    "test:mcp": "bun scripts/test-mcp.ts",
+    "test:rust": "cargo test -p d82-core",
+    "test:all": "bun run validate:themes && bun run test:mcp && bun run check:ui && bun run build:ui",
+    "desktop:dev": "cd src-tauri && bunx @tauri-apps/cli dev",
+    "desktop:build": "cd src-tauri && bunx @tauri-apps/cli build"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_GITHUB_USER/divisiont82"
+  },
+  "keywords": [
+    "desktop-shell",
+    "holographic-ui",
+    "tauri",
+    "rust",
+    "widgets",
+    "mcp",
+    "windows",
+    "linux"
+  ]
+}

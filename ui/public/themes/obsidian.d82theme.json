@@ -1,0 +1,60 @@
+{
+  "id": "obsidian",
+  "name": "DivisionT82 / OBSIDIAN",
+  "version": "1.0.0",
+  "author": "DivisionT82",
+  "description": "Obsidian glass over the void. Cyan circuitry and violet plasma for the night shift.",
+  "tags": ["dark", "glass", "holographic", "flagship"],
+  "appearance": {
+    "mode": "dark",
+    "wallpaper": {
+      "mode": "gradient",
+      "asset": null
+    }
+  },
+  "palette": {
+    "bg": "#050507",
+    "bgElevated": "#0b0b11",
+    "bgPanel": "#0d0d14",
+    "stroke": "#1c1c28",
+    "strokeHolo": "#22d3ee",
+    "text": "#e8f0f2",
+    "textDim": "#7c8b94",
+    "accent": "#22d3ee",
+    "accent2": "#a78bfa",
+    "accent3": "#f472b6",
+    "danger": "#fb4d5c",
+    "warn": "#fbbf24",
+    "ok": "#34d399"
+  },
+  "glass": {
+    "opacity": 0.42,
+    "blurRadius": 26,
+    "saturation": 1.25,
+    "borderRadius": 14,
+    "noise": true,
+    "scanlines": true
+  },
+  "typography": {
+    "display": "'Rajdhani', 'Segoe UI', system-ui, sans-serif",
+    "body": "'Inter', 'Segoe UI', system-ui, sans-serif",
+    "mono": "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
+    "scale": 1
+  },
+  "motion": {
+    "enabled": true,
+    "intensity": 0.85,
+    "panelGlow": 0.7
+  },
+  "holo": {
+    "grid": true,
+    "gridOpacity": 0.1,
+    "particles": "dust",
+    "waveform": true,
+    "vignette": true
+  },
+  "sounds": {
+    "enabled": false,
+    "pack": null
+  }
+}

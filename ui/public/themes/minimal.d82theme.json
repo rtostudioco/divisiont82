@@ -1,0 +1,60 @@
+{
+  "id": "minimal",
+  "name": "DivisionT82 / MINIMAL",
+  "version": "1.0.0",
+  "author": "DivisionT82",
+  "description": "The quiet operator. Graphite surfaces, one emerald signal, zero noise.",
+  "tags": ["dark", "clean", "calm", "flagship"],
+  "appearance": {
+    "mode": "dark",
+    "wallpaper": {
+      "mode": "gradient",
+      "asset": null
+    }
+  },
+  "palette": {
+    "bg": "#0a0a0a",
+    "bgElevated": "#111111",
+    "bgPanel": "#141414",
+    "stroke": "#222222",
+    "strokeHolo": "#10b981",
+    "text": "#ececec",
+    "textDim": "#8a8a8a",
+    "accent": "#10b981",
+    "accent2": "#d4d4d4",
+    "accent3": "#737373",
+    "danger": "#f87171",
+    "warn": "#fbbf24",
+    "ok": "#10b981"
+  },
+  "glass": {
+    "opacity": 0.72,
+    "blurRadius": 10,
+    "saturation": 0.9,
+    "borderRadius": 8,
+    "noise": false,
+    "scanlines": false
+  },
+  "typography": {
+    "display": "'Inter', 'Segoe UI', system-ui, sans-serif",
+    "body": "'Inter', 'Segoe UI', system-ui, sans-serif",
+    "mono": "'JetBrains Mono', Consolas, monospace",
+    "scale": 1
+  },
+  "motion": {
+    "enabled": true,
+    "intensity": 0.3,
+    "panelGlow": 0.15
+  },
+  "holo": {
+    "grid": false,
+    "gridOpacity": 0.03,
+    "particles": "none",
+    "waveform": false,
+    "vignette": false
+  },
+  "sounds": {
+    "enabled": false,
+    "pack": null
+  }
+}

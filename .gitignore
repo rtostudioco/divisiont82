@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+ui/dist/
+ui/dist-demo/
+target/
+src-tauri/gen/
+
+# Bun / Node
+*.log
+bun.lockb
+package-lock.json
+
+# Rust
+**/*.rs.bk
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# DivisionT82 runtime
+*.d82state

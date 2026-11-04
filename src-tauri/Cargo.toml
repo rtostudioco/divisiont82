@@ -1,0 +1,22 @@
+[package]
+name = "divisiont82"
+description = "DivisionT82 — holographic desktop shell for Windows & Linux"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[lib]
+name = "divisiont82_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+d82-core = { path = "../crates/d82-core" }
+log = "0.4"

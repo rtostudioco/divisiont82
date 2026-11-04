@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://divisiont82.dev/schemas/theme-1.0.0.json",
+  "title": "DivisionT82 Theme Pack (.d82theme)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "version",
+    "author",
+    "description",
+    "tags",
+    "appearance",
+    "palette",
+    "glass",
+    "typography",
+    "motion",
+    "holo",
+    "sounds"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "maxLength": 32 },
+    "name": { "type": "string", "minLength": 3, "maxLength": 64 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "author": { "type": "string", "minLength": 2, "maxLength": 64 },
+    "description": { "type": "string", "minLength": 8, "maxLength": 280 },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 2, "maxLength": 24 },
+      "maxItems": 8,
+      "uniqueItems": true
+    },
+    "appearance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "wallpaper"],
+      "properties": {
+        "mode": { "enum": ["dark", "light"] },
+        "wallpaper": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "asset"],
+          "properties": {
+            "mode": { "enum": ["system", "gradient", "asset"] },
+            "asset": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bg", "bgElevated", "bgPanel", "stroke", "strokeHolo",
+        "text", "textDim", "accent", "accent2", "accent3",
+        "danger", "warn", "ok"
+      ],
+      "properties": {
+        "bg":         { "$ref": "#/definitions/hexColor" },
+        "bgElevated": { "$ref": "#/definitions/hexColor" },
+        "bgPanel":    { "$ref": "#/definitions/hexColor" },
+        "stroke":     { "$ref": "#/definitions/hexColor" },
+        "strokeHolo": { "$ref": "#/definitions/hexColor" },
+        "text":       { "$ref": "#/definitions/hexColor" },
+        "textDim":    { "$ref": "#/definitions/hexColor" },
+        "accent":     { "$ref": "#/definitions/hexColor" },
+        "accent2":    { "$ref": "#/definitions/hexColor" },
+        "accent3":    { "$ref": "#/definitions/hexColor" },
+        "danger":     { "$ref": "#/definitions/hexColor" },
+        "warn":       { "$ref": "#/definitions/hexColor" },
+        "ok":         { "$ref": "#/definitions/hexColor" }
+      }
+    },
+    "glass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["opacity", "blurRadius", "saturation", "borderRadius", "noise", "scanlines"],
+      "properties": {
+        "opacity":     { "type": "number", "minimum": 0.05, "maximum": 1 },
+        "blurRadius":  { "type": "number", "minimum": 0, "maximum": 64 },
+        "saturation":  { "type": "number", "minimum": 0, "maximum": 2 },
+        "borderRadius":{ "type": "number", "minimum": 0, "maximum": 32 },
+        "noise":       { "type": "boolean" },
+        "scanlines":   { "type": "boolean" }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["display", "body", "mono", "scale"],
+      "properties": {
+        "display": { "type": "string", "minLength": 2, "maxLength": 96 },
+        "body":    { "type": "string", "minLength": 2, "maxLength": 96 },
+        "mono":    { "type": "string", "minLength": 2, "maxLength": 96 },
+        "scale":   { "type": "number", "minimum": 0.5, "maximum": 2 }
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "intensity", "panelGlow"],
+      "properties": {
+        "enabled":    { "type": "boolean" },
+        "intensity":  { "type": "number", "minimum": 0, "maximum": 1 },
+        "panelGlow":  { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "holo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grid", "gridOpacity", "particles", "waveform", "vignette"],
+      "properties": {
+        "grid":        { "type": "boolean" },
+        "gridOpacity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "particles":   { "enum": ["none", "dust", "matrix", "orbit"] },
+        "waveform":    { "type": "boolean" },
+        "vignette":    { "type": "boolean" }
+      }
+    },
+    "sounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "pack"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "pack":    { "type": ["string", "null"], "maxLength": 48 }
+      }
+    }
+  },
+  "definitions": {
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    }
+  }
+}

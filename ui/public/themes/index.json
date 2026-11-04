@@ -1,0 +1,8 @@
+{
+  "packs": [
+    "minimal.d82theme.json",
+    "neural.d82theme.json",
+    "quantum.d82theme.json",
+    "obsidian.d82theme.json"
+  ]
+}

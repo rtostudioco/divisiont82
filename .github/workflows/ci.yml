@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust-core:
+    name: Rust core (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: crates/d82-core
+
+      - name: Test d82-core (theme engine, widgets, metrics)
+        run: cargo test -p d82-core --all-features
+
+  ui:
+    name: TypeScript UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Sync theme packs
+        run: bun run sync:themes
+
+      - name: Validate theme packs
+        run: bun run validate:themes
+
+      - name: Typecheck
+        run: bun run check:ui
+
+      - name: Build
+        run: bun run build:ui
+
+  mcp:
+    name: MCP bridge (conformance)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: MCP protocol end-to-end test
+        run: bun run test:mcp

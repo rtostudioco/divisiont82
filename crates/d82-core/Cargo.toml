@@ -1,0 +1,20 @@
+[package]
+name = "d82-core"
+description = "DivisionT82 core: theme engine, widget specs and system metrics. Pure Rust, no desktop-framework dependencies."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[features]
+default = ["metrics"]
+metrics = ["dep:sysinfo"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+sysinfo = { version = "0.32", optional = true }
+
+[dev-dependencies]

@@ -1,0 +1,60 @@
+{
+  "id": "neural",
+  "name": "DivisionT82 / NEURAL",
+  "version": "1.0.0",
+  "author": "DivisionT82",
+  "description": "Warm amber synapses firing over carbon black. For long sessions of deep work.",
+  "tags": ["dark", "warm", "plasma", "flagship"],
+  "appearance": {
+    "mode": "dark",
+    "wallpaper": {
+      "mode": "gradient",
+      "asset": null
+    }
+  },
+  "palette": {
+    "bg": "#080604",
+    "bgElevated": "#100c08",
+    "bgPanel": "#140f0a",
+    "stroke": "#241a10",
+    "strokeHolo": "#fb923c",
+    "text": "#f5ede2",
+    "textDim": "#9c8a74",
+    "accent": "#fb923c",
+    "accent2": "#fde047",
+    "accent3": "#f87171",
+    "danger": "#ef4444",
+    "warn": "#fde047",
+    "ok": "#4ade80"
+  },
+  "glass": {
+    "opacity": 0.5,
+    "blurRadius": 22,
+    "saturation": 1.15,
+    "borderRadius": 12,
+    "noise": true,
+    "scanlines": true
+  },
+  "typography": {
+    "display": "'Rajdhani', 'Segoe UI', system-ui, sans-serif",
+    "body": "'Inter', 'Segoe UI', system-ui, sans-serif",
+    "mono": "'IBM Plex Mono', 'Cascadia Code', Consolas, monospace",
+    "scale": 1
+  },
+  "motion": {
+    "enabled": true,
+    "intensity": 0.6,
+    "panelGlow": 0.5
+  },
+  "holo": {
+    "grid": false,
+    "gridOpacity": 0.06,
+    "particles": "matrix",
+    "waveform": true,
+    "vignette": true
+  },
+  "sounds": {
+    "enabled": false,
+    "pack": null
+  }
+}

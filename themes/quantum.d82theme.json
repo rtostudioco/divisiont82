@@ -1,0 +1,60 @@
+{
+  "id": "quantum",
+  "name": "DivisionT82 / QUANTUM",
+  "version": "1.0.0",
+  "author": "DivisionT82",
+  "description": "Superposition of emerald and magenta states. High-energy particles over deep graphite.",
+  "tags": ["dark", "energy", "particles", "flagship"],
+  "appearance": {
+    "mode": "dark",
+    "wallpaper": {
+      "mode": "gradient",
+      "asset": null
+    }
+  },
+  "palette": {
+    "bg": "#060807",
+    "bgElevated": "#0a0f0c",
+    "bgPanel": "#0c1210",
+    "stroke": "#17251f",
+    "strokeHolo": "#34d399",
+    "text": "#e6f4ec",
+    "textDim": "#75937f",
+    "accent": "#34d399",
+    "accent2": "#e879f9",
+    "accent3": "#a3e635",
+    "danger": "#f87171",
+    "warn": "#facc15",
+    "ok": "#34d399"
+  },
+  "glass": {
+    "opacity": 0.38,
+    "blurRadius": 32,
+    "saturation": 1.4,
+    "borderRadius": 18,
+    "noise": true,
+    "scanlines": false
+  },
+  "typography": {
+    "display": "'Orbitron', 'Segoe UI', system-ui, sans-serif",
+    "body": "'Inter', 'Segoe UI', system-ui, sans-serif",
+    "mono": "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
+    "scale": 1
+  },
+  "motion": {
+    "enabled": true,
+    "intensity": 1,
+    "panelGlow": 0.85
+  },
+  "holo": {
+    "grid": true,
+    "gridOpacity": 0.14,
+    "particles": "orbit",
+    "waveform": true,
+    "vignette": true
+  },
+  "sounds": {
+    "enabled": false,
+    "pack": null
+  }
+}
