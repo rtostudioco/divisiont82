@@ -198,7 +198,7 @@ pub fn mcp_start(handle: State<'_, McpHandle>) -> Result<McpStatus, String> {
 
     let mut session = McpSession { child, stdin, pending };
 
-    let handshake = || -> Result<usize, String> {
+    let mut handshake = || -> Result<usize, String> {
         handle.request(
             &mut session,
             "initialize",
