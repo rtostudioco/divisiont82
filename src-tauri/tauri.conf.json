@@ -4,9 +4,9 @@
   "version": "0.2.0",
   "identifier": "dev.divisiont82.shell",
   "build": {
-    "beforeDevCommand": "cd .. && bun run dev:ui",
+    "beforeDevCommand": "bun run dev:ui",
     "devUrl": "http://localhost:5173",
-    "beforeBuildCommand": "cd .. && bun run build:ui",
+    "beforeBuildCommand": "bun run build:ui",
     "frontendDist": "../ui/dist"
   },
   "app": {
