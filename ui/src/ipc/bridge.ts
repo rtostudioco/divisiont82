@@ -19,7 +19,7 @@ const IS_TAURI =
 export const runningInTauri = (): boolean => IS_TAURI;
 
 /** Shell version — kept in sync with the workspace version. */
-export const SHELL_VERSION = "0.2.0";
+export const SHELL_VERSION = "0.2.1";
 
 async function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   const { invoke } = await import("@tauri-apps/api/core");
@@ -211,6 +211,8 @@ export interface Bridge {
   mcpStart(): Promise<McpStatus>;
   mcpStop(): Promise<McpStatus>;
   mcpCall(_tool: string, _args?: Record<string, unknown>): Promise<McpCallResult>;
+  /** Desktop Mode: fullscreen shell + hidden native taskbar (Windows). */
+  desktopMode(_on: boolean): Promise<boolean>;
   /** Subscribes to native global-shortcut actions. Returns an unlisten fn. */
   listenShortcuts(_handler: (action: string) => void): Promise<() => void>;
 }
@@ -232,6 +234,7 @@ const bridge: Bridge = IS_TAURI
       mcpStart: () => tauriInvoke<McpStatus>("mcp_start"),
       mcpStop: () => tauriInvoke<McpStatus>("mcp_stop"),
       mcpCall: (tool, args) => tauriInvoke<McpCallResult>("mcp_call", { tool, args }),
+      desktopMode: (on) => tauriInvoke<boolean>("desktop_mode", { on }),
       listenShortcuts: async (handler) => {
         const { listen } = await import("@tauri-apps/api/event");
         const unlisten = await listen<string>("d82://shortcut", (event) => handler(event.payload));
@@ -268,6 +271,18 @@ const bridge: Bridge = IS_TAURI
         return mockMcpStatus();
       },
       mcpCall: (tool, args) => mockMcpCall(tool, args ?? {}),
+      desktopMode: async (on) => {
+        try {
+          if (on && !document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+          } else if (!on && document.fullscreenElement) {
+            await document.exitFullscreen();
+          }
+        } catch {
+          /* needs a user gesture — the web demo just ignores it */
+        }
+        return on;
+      },
       listenShortcuts: async () => () => undefined,
     };
 

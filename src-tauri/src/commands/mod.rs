@@ -1,5 +1,6 @@
 //! Tauri command handlers, grouped by engine level.
 
+pub mod desktop;
 pub mod layout;
 pub mod mcp;
 pub mod panels;

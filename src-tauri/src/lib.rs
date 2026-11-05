@@ -6,11 +6,14 @@
 //! 3. **Holo Interface commands** — creation and management of the floating
 //!    transparent panel windows, plus layout persistence.
 //! 4. **Universal MCP client** — live JSON-RPC stdio session with the bridge
-//!    process, plus global shortcuts (`ctrl+alt+d/t/v/m`).
+//!    process, plus global shortcuts (`ctrl+alt+d/t/v/m/s`).
+//! 5. **Desktop Mode** — reversible full-screen DE experience (fullscreen
+//!    shell + hidden native taskbar on Windows, restored on exit).
 //!
-//! It deliberately does NOT manage keybinds, monitors or the taskbar: the
+//! It deliberately does NOT manage monitors, sessions or system files: the
 //! operating system / compositor stays in charge (Serpantinum's lesson:
-//! "a shell, not an OS").
+//! "a shell, not an OS"). Desktop Mode is an overlay, never a permanent
+//! modification of the host system.
 
 mod commands;
 mod state;
@@ -21,6 +24,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .on_window_event(|_window, event| {
+            if matches!(event, tauri::WindowEvent::Destroyed) {
+                commands::desktop::restore();
+            }
+        })
         .setup(|app| {
             let app_data = app
                 .path()
@@ -40,6 +48,7 @@ pub fn run() {
                     ("ctrl+alt+t", "cycle-theme"),
                     ("ctrl+alt+v", "toggle-holo"),
                     ("ctrl+alt+m", "toggle-mcp"),
+                    ("ctrl+alt+s", "toggle-desktop"),
                 ];
                 for (combo, action) in shortcuts {
                     let action = (*action).to_string();
@@ -54,7 +63,7 @@ pub fn run() {
                         log::warn!("global shortcut '{combo}' unavailable: {e}");
                     }
                 }
-                log::info!("global shortcuts registered (ctrl+alt+d/t/v/m)");
+                log::info!("global shortcuts registered (ctrl+alt+d/t/v/m/s)");
             }
 
             log::info!("DivisionT82 shell started");
@@ -77,6 +86,7 @@ pub fn run() {
             commands::mcp::mcp_stop,
             commands::mcp::mcp_status,
             commands::mcp::mcp_call,
+            commands::desktop::desktop_mode,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DivisionT82");

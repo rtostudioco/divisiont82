@@ -22,3 +22,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 d82-core = { path = "../crates/d82-core" }
 log = "0.4"
+
+# Desktop Mode — hide/restore the native taskbar (Windows only)
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser"] }

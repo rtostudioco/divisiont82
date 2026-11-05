@@ -64,6 +64,7 @@ export function Panel({
     }
   });
   const [snapHint, setSnapHint] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [entering, setEntering] = useState(true);
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -104,6 +105,7 @@ export function Panel({
     if ((e.target as HTMLElement).closest("button")) return;
     dragRef.current = { dx: e.clientX - pos.x, dy: e.clientY - pos.y };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    setDragging(true);
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -133,6 +135,7 @@ export function Panel({
     if (!dragRef.current) return;
     dragRef.current = null;
     setSnapHint(false);
+    setDragging(false);
     (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     persist(pos);
   };
@@ -145,6 +148,7 @@ export function Panel({
       className={[
         "holo-panel",
         snapHint ? "holo-panel--snap-hint" : "",
+        dragging ? "holo-panel--dragging" : "",
         entering ? "holo-panel--enter" : "",
         ghost ? "holo-panel--ghost" : "",
       ].join(" ")}

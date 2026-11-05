@@ -140,6 +140,14 @@
     0 24px 60px rgba(0, 0, 0, 0.5);
 }
 
+/* Dragged panel floats above every other layer. */
+.holo-panel--dragging {
+  z-index: 40;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--d82-accent, #22d3ee) 35%, transparent),
+    0 30px 70px rgba(0, 0, 0, 0.6);
+}
+
 .holo-panel__header {
   display: flex;
   align-items: center;
@@ -190,10 +198,26 @@
 .holo-panel__body {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* auto-fit: single-widget panels (AI Core, Launchpad) use the full width;
+     two-widget panels (SYSTEM, CHRONO, ENV) keep the 2-column grid. */
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  align-content: start;
   gap: 10px;
   padding: 12px;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--d82-stroke-holo, #22d3ee) 30%, transparent) transparent;
+}
+
+.holo-panel__body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.holo-panel__body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--d82-stroke-holo, #22d3ee) 30%, transparent);
+  border-radius: 4px;
 }
 
 .holo-panel__body--collapsed {
@@ -370,7 +394,10 @@
   background: color-mix(in srgb, var(--d82-bg, #050507) 38%, transparent);
   border: 1px solid color-mix(in srgb, var(--d82-stroke, #1c1c28) 60%, transparent);
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
+  /* Enables cqw units: inner text scales with the widget's real width. */
+  container-type: inline-size;
 }
 
 .widget__label {
@@ -455,9 +482,12 @@
 
 .widget--clock .widget__time {
   font-family: var(--d82-font-mono, monospace);
-  font-size: 40px;
+  /* Fluid: never overflows the widget — falls back to 30px without cq. */
+  font-size: 30px;
+  font-size: clamp(19px, 19cqw, 40px);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
   color: var(--d82-text, #e8f0f2);
   line-height: 1;
   text-shadow: 0 0 24px color-mix(in srgb, var(--d82-accent, #22d3ee) 35%, transparent);

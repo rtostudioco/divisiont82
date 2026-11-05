@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Bot, CloudSun, CalendarDays, Clock3, Cpu, Eye, Rocket, Palette, Wifi } from "lucide-react";
+import { Bot, CloudSun, CalendarDays, Clock3, Cpu, Eye, Maximize, Rocket, Palette, Wifi } from "lucide-react";
 import { useTheme } from "../themes/ThemeProvider";
 
 interface DockProps {
   openPanels: Record<string, boolean>;
   togglePanel: (id: string) => void;
   onToggleHolo: () => void;
+  desktopMode: boolean;
+  onToggleDesktop: () => void;
 }
 
 const PANEL_BUTTONS = [
@@ -19,7 +21,7 @@ const PANEL_BUTTONS = [
 /**
  * Floating holo dock: panel switches + theme pack switcher.
  */
-export function Dock({ openPanels, togglePanel, onToggleHolo }: DockProps) {
+export function Dock({ openPanels, togglePanel, onToggleHolo, desktopMode, onToggleDesktop }: DockProps) {
   const { themes, theme, setTheme } = useTheme();
   const [pickerOpen, setPickerOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -59,6 +61,16 @@ export function Dock({ openPanels, togglePanel, onToggleHolo }: DockProps) {
       >
         <Eye size={17} />
         <span className="holo-dock__tooltip">HOLO PAUSE</span>
+      </button>
+
+      <button
+        className={`holo-dock__btn ${desktopMode ? "holo-dock__btn--active" : ""}`}
+        onClick={onToggleDesktop}
+        aria-pressed={desktopMode}
+        aria-label="Desktop mode (ctrl+alt+s)"
+      >
+        <Maximize size={17} />
+        <span className="holo-dock__tooltip">DESKTOP MODE</span>
       </button>
 
       <button

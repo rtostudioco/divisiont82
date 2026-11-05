@@ -12,11 +12,16 @@ function HoloShell() {
   const [layout, setLayout] = useState<Layout | null>(null);
   const [openPanels, setOpenPanels] = useState<Record<string, boolean>>({});
   const [holoHidden, setHoloHidden] = useState(false);
+  const [desktop, setDesktop] = useState(false);
 
   const openRef = useRef(openPanels);
   useEffect(() => {
     openRef.current = openPanels;
   }, [openPanels]);
+  const desktopRef = useRef(false);
+  useEffect(() => {
+    desktopRef.current = desktop;
+  }, [desktop]);
   const collapsedRef = useRef<Record<string, boolean> | null>(null);
 
   useEffect(() => {
@@ -73,6 +78,15 @@ function HoloShell() {
         case "toggle-holo":
           setHoloHidden((h) => !h);
           break;
+        case "toggle-desktop": {
+          const next = !desktopRef.current;
+          setDesktop(next);
+          void bridge
+            .desktopMode(next)
+            .then((confirmed) => setDesktop(confirmed))
+            .catch(() => setDesktop(false));
+          break;
+        }
         case "toggle-mcp":
           void (async () => {
             try {
@@ -182,6 +196,8 @@ function HoloShell() {
             openPanels={openPanels}
             togglePanel={togglePanel}
             onToggleHolo={() => setHoloHidden(true)}
+            desktopMode={desktop}
+            onToggleDesktop={() => handleAction("toggle-desktop")}
           />
         </>
       )}

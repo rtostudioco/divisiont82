@@ -1,0 +1,435 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 32298ae..769b522 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -3,7 +3,7 @@ resolver = "2"
+ members = ["crates/d82-core", "src-tauri"]
+ 
+ [workspace.package]
+-version = "0.2.0"
++version = "0.2.1"
+ edition = "2021"
+ license = "MIT"
+ authors = ["DivisionT82 contributors"]
+diff --git a/package.json b/package.json
+index 01ee6f6..e7360b4 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "divisiont82",
+-  "version": "0.2.0",
++  "version": "0.2.1",
+   "private": true,
+   "description": "DivisionT82 — Holographic desktop shell for Windows & Linux. MCP-native.",
+   "license": "MIT",
+diff --git a/src-tauri/Cargo.toml b/src-tauri/Cargo.toml
+index 81aaab3..7942777 100644
+--- a/src-tauri/Cargo.toml
++++ b/src-tauri/Cargo.toml
+@@ -22,3 +22,7 @@ serde = { workspace = true }
+ serde_json = { workspace = true }
+ d82-core = { path = "../crates/d82-core" }
+ log = "0.4"
++
++# Desktop Mode — hide/restore the native taskbar (Windows only)
++[target.'cfg(windows)'.dependencies]
++winapi = { version = "0.3", features = ["winuser"] }
+diff --git a/src-tauri/src/commands/desktop.rs b/src-tauri/src/commands/desktop.rs
+new file mode 100644
+index 0000000..d3bd47e
+--- /dev/null
++++ b/src-tauri/src/commands/desktop.rs
+@@ -0,0 +1,48 @@
++//! Etapa C — Desktop Mode.
++//!
++//! Turns the shell into a full-screen desktop-environment layer: the main
++//! window goes borderless fullscreen and (on Windows) the native taskbar is
++//! hidden while the mode is ON. Everything is restored when the mode turns
++//! OFF or when the window closes. It is a reversible overlay — a shell, not
++//! an OS: we never touch registry keys, shell replacements or sessions.
++
++use tauri::Window;
++
++/// Hides/shows the native Windows taskbars (primary + secondary monitors).
++/// Best-effort: if the lookup fails the mode still works because the
++/// fullscreen window covers the whole screen.
++#[cfg(windows)]
++pub fn set_taskbar_visible(visible: bool) {
++    use winapi::um::winuser::{FindWindowW, ShowWindow, SW_HIDE, SW_SHOW};
++    unsafe {
++        for class in ["Shell_TrayWnd", "Shell_SecondaryTrayWnd"] {
++            let mut wide: Vec<u16> = class.encode_utf16().collect();
++            wide.push(0);
++            let hwnd = FindWindowW(wide.as_ptr(), std::ptr::null());
++            if !hwnd.is_null() {
++                ShowWindow(hwnd, if visible { SW_SHOW } else { SW_HIDE });
++            }
++        }
++    }
++}
++
++/// No-op on non-Windows platforms (the desktop environment owns its panels).
++#[cfg(not(windows))]
++pub fn set_taskbar_visible(_visible: bool) {}
++
++/// Restores the desktop chrome — called when the shell window is destroyed.
++pub fn restore() {
++    set_taskbar_visible(true);
++}
++
++/// Toggles Desktop Mode: borderless fullscreen shell with the native taskbar
++/// hidden (Windows). Returns the resulting state.
++#[tauri::command]
++pub fn desktop_mode(window: Window, on: bool) -> Result<bool, String> {
++    // Taskbar first, so the fullscreen transition never flashes it.
++    set_taskbar_visible(!on);
++    window
++        .set_fullscreen(on)
++        .map_err(|e| format!("fullscreen failed: {e}"))?;
++    Ok(on)
++}
+diff --git a/src-tauri/src/commands/mod.rs b/src-tauri/src/commands/mod.rs
+index cea3678..505d364 100644
+--- a/src-tauri/src/commands/mod.rs
++++ b/src-tauri/src/commands/mod.rs
+@@ -1,5 +1,6 @@
+ //! Tauri command handlers, grouped by engine level.
+ 
++pub mod desktop;
+ pub mod layout;
+ pub mod mcp;
+ pub mod panels;
+diff --git a/src-tauri/src/lib.rs b/src-tauri/src/lib.rs
+index 738bbe6..f7f0235 100644
+--- a/src-tauri/src/lib.rs
++++ b/src-tauri/src/lib.rs
+@@ -6,11 +6,14 @@
+ //! 3. **Holo Interface commands** — creation and management of the floating
+ //!    transparent panel windows, plus layout persistence.
+ //! 4. **Universal MCP client** — live JSON-RPC stdio session with the bridge
+-//!    process, plus global shortcuts (`ctrl+alt+d/t/v/m`).
++//!    process, plus global shortcuts (`ctrl+alt+d/t/v/m/s`).
++//! 5. **Desktop Mode** — reversible full-screen DE experience (fullscreen
++//!    shell + hidden native taskbar on Windows, restored on exit).
+ //!
+-//! It deliberately does NOT manage keybinds, monitors or the taskbar: the
++//! It deliberately does NOT manage monitors, sessions or system files: the
+ //! operating system / compositor stays in charge (Serpantinum's lesson:
+-//! "a shell, not an OS").
++//! "a shell, not an OS"). Desktop Mode is an overlay, never a permanent
++//! modification of the host system.
+ 
+ mod commands;
+ mod state;
+@@ -21,6 +24,11 @@ pub fn run() {
+     tauri::Builder::default()
+         .plugin(tauri_plugin_opener::init())
+         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
++        .on_window_event(|_window, event| {
++            if matches!(event, tauri::WindowEvent::Destroyed) {
++                commands::desktop::restore();
++            }
++        })
+         .setup(|app| {
+             let app_data = app
+                 .path()
+@@ -40,6 +48,7 @@ pub fn run() {
+                     ("ctrl+alt+t", "cycle-theme"),
+                     ("ctrl+alt+v", "toggle-holo"),
+                     ("ctrl+alt+m", "toggle-mcp"),
++                    ("ctrl+alt+s", "toggle-desktop"),
+                 ];
+                 for (combo, action) in shortcuts {
+                     let action = (*action).to_string();
+@@ -54,7 +63,7 @@ pub fn run() {
+                         log::warn!("global shortcut '{combo}' unavailable: {e}");
+                     }
+                 }
+-                log::info!("global shortcuts registered (ctrl+alt+d/t/v/m)");
++                log::info!("global shortcuts registered (ctrl+alt+d/t/v/m/s)");
+             }
+ 
+             log::info!("DivisionT82 shell started");
+@@ -77,6 +86,7 @@ pub fn run() {
+             commands::mcp::mcp_stop,
+             commands::mcp::mcp_status,
+             commands::mcp::mcp_call,
++            commands::desktop::desktop_mode,
+         ])
+         .run(tauri::generate_context!())
+         .expect("error while running DivisionT82");
+diff --git a/src-tauri/tauri.conf.json b/src-tauri/tauri.conf.json
+index f341171..da9ca93 100644
+--- a/src-tauri/tauri.conf.json
++++ b/src-tauri/tauri.conf.json
+@@ -1,7 +1,7 @@
+ {
+   "$schema": "https://schema.tauri.app/config/2",
+   "productName": "DivisionT82",
+-  "version": "0.2.0",
++  "version": "0.2.1",
+   "identifier": "dev.divisiont82.shell",
+   "build": {
+     "beforeDevCommand": "bun run dev:ui",
+diff --git a/ui/package.json b/ui/package.json
+index 4d920fa..6b0875e 100644
+--- a/ui/package.json
++++ b/ui/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@divisiont82/ui",
+-  "version": "0.2.0",
++  "version": "0.2.1",
+   "private": true,
+   "description": "DivisionT82 holo interface (webview frontend)",
+   "type": "module",
+diff --git a/ui/src/App.tsx b/ui/src/App.tsx
+index 7e5a74f..fe50898 100644
+--- a/ui/src/App.tsx
++++ b/ui/src/App.tsx
+@@ -12,11 +12,16 @@ function HoloShell() {
+   const [layout, setLayout] = useState<Layout | null>(null);
+   const [openPanels, setOpenPanels] = useState<Record<string, boolean>>({});
+   const [holoHidden, setHoloHidden] = useState(false);
++  const [desktop, setDesktop] = useState(false);
+ 
+   const openRef = useRef(openPanels);
+   useEffect(() => {
+     openRef.current = openPanels;
+   }, [openPanels]);
++  const desktopRef = useRef(false);
++  useEffect(() => {
++    desktopRef.current = desktop;
++  }, [desktop]);
+   const collapsedRef = useRef<Record<string, boolean> | null>(null);
+ 
+   useEffect(() => {
+@@ -73,6 +78,15 @@ function HoloShell() {
+         case "toggle-holo":
+           setHoloHidden((h) => !h);
+           break;
++        case "toggle-desktop": {
++          const next = !desktopRef.current;
++          setDesktop(next);
++          void bridge
++            .desktopMode(next)
++            .then((confirmed) => setDesktop(confirmed))
++            .catch(() => setDesktop(false));
++          break;
++        }
+         case "toggle-mcp":
+           void (async () => {
+             try {
+@@ -182,6 +196,8 @@ function HoloShell() {
+             openPanels={openPanels}
+             togglePanel={togglePanel}
+             onToggleHolo={() => setHoloHidden(true)}
++            desktopMode={desktop}
++            onToggleDesktop={() => handleAction("toggle-desktop")}
+           />
+         </>
+       )}
+diff --git a/ui/src/holo/Dock.tsx b/ui/src/holo/Dock.tsx
+index 057dd35..255d054 100644
+--- a/ui/src/holo/Dock.tsx
++++ b/ui/src/holo/Dock.tsx
+@@ -1,11 +1,13 @@
+ import { useEffect, useRef, useState } from "react";
+-import { Bot, CloudSun, CalendarDays, Clock3, Cpu, Eye, Rocket, Palette, Wifi } from "lucide-react";
++import { Bot, CloudSun, CalendarDays, Clock3, Cpu, Eye, Maximize, Rocket, Palette, Wifi } from "lucide-react";
+ import { useTheme } from "../themes/ThemeProvider";
+ 
+ interface DockProps {
+   openPanels: Record<string, boolean>;
+   togglePanel: (id: string) => void;
+   onToggleHolo: () => void;
++  desktopMode: boolean;
++  onToggleDesktop: () => void;
+ }
+ 
+ const PANEL_BUTTONS = [
+@@ -19,7 +21,7 @@ const PANEL_BUTTONS = [
+ /**
+  * Floating holo dock: panel switches + theme pack switcher.
+  */
+-export function Dock({ openPanels, togglePanel, onToggleHolo }: DockProps) {
++export function Dock({ openPanels, togglePanel, onToggleHolo, desktopMode, onToggleDesktop }: DockProps) {
+   const { themes, theme, setTheme } = useTheme();
+   const [pickerOpen, setPickerOpen] = useState(false);
+   const popoverRef = useRef<HTMLDivElement>(null);
+@@ -61,6 +63,16 @@ export function Dock({ openPanels, togglePanel, onToggleHolo }: DockProps) {
+         <span className="holo-dock__tooltip">HOLO PAUSE</span>
+       </button>
+ 
++      <button
++        className={`holo-dock__btn ${desktopMode ? "holo-dock__btn--active" : ""}`}
++        onClick={onToggleDesktop}
++        aria-pressed={desktopMode}
++        aria-label="Desktop mode (ctrl+alt+s)"
++      >
++        <Maximize size={17} />
++        <span className="holo-dock__tooltip">DESKTOP MODE</span>
++      </button>
++
+       <button
+         className={`holo-dock__btn ${pickerOpen ? "holo-dock__btn--active" : ""}`}
+         onClick={() => setPickerOpen((o) => !o)}
+diff --git a/ui/src/holo/Panel.tsx b/ui/src/holo/Panel.tsx
+index 2d65286..8f04d4d 100644
+--- a/ui/src/holo/Panel.tsx
++++ b/ui/src/holo/Panel.tsx
+@@ -64,6 +64,7 @@ export function Panel({
+     }
+   });
+   const [snapHint, setSnapHint] = useState(false);
++  const [dragging, setDragging] = useState(false);
+   const [entering, setEntering] = useState(true);
+   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
+   const panelRef = useRef<HTMLDivElement>(null);
+@@ -104,6 +105,7 @@ export function Panel({
+     if ((e.target as HTMLElement).closest("button")) return;
+     dragRef.current = { dx: e.clientX - pos.x, dy: e.clientY - pos.y };
+     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
++    setDragging(true);
+   };
+ 
+   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+@@ -133,6 +135,7 @@ export function Panel({
+     if (!dragRef.current) return;
+     dragRef.current = null;
+     setSnapHint(false);
++    setDragging(false);
+     (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+     persist(pos);
+   };
+@@ -145,6 +148,7 @@ export function Panel({
+       className={[
+         "holo-panel",
+         snapHint ? "holo-panel--snap-hint" : "",
++        dragging ? "holo-panel--dragging" : "",
+         entering ? "holo-panel--enter" : "",
+         ghost ? "holo-panel--ghost" : "",
+       ].join(" ")}
+diff --git a/ui/src/ipc/bridge.ts b/ui/src/ipc/bridge.ts
+index a48298e..48640df 100644
+--- a/ui/src/ipc/bridge.ts
++++ b/ui/src/ipc/bridge.ts
+@@ -19,7 +19,7 @@ const IS_TAURI =
+ export const runningInTauri = (): boolean => IS_TAURI;
+ 
+ /** Shell version — kept in sync with the workspace version. */
+-export const SHELL_VERSION = "0.2.0";
++export const SHELL_VERSION = "0.2.1";
+ 
+ async function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+   const { invoke } = await import("@tauri-apps/api/core");
+@@ -211,6 +211,8 @@ export interface Bridge {
+   mcpStart(): Promise<McpStatus>;
+   mcpStop(): Promise<McpStatus>;
+   mcpCall(_tool: string, _args?: Record<string, unknown>): Promise<McpCallResult>;
++  /** Desktop Mode: fullscreen shell + hidden native taskbar (Windows). */
++  desktopMode(_on: boolean): Promise<boolean>;
+   /** Subscribes to native global-shortcut actions. Returns an unlisten fn. */
+   listenShortcuts(_handler: (action: string) => void): Promise<() => void>;
+ }
+@@ -232,6 +234,7 @@ const bridge: Bridge = IS_TAURI
+       mcpStart: () => tauriInvoke<McpStatus>("mcp_start"),
+       mcpStop: () => tauriInvoke<McpStatus>("mcp_stop"),
+       mcpCall: (tool, args) => tauriInvoke<McpCallResult>("mcp_call", { tool, args }),
++      desktopMode: (on) => tauriInvoke<boolean>("desktop_mode", { on }),
+       listenShortcuts: async (handler) => {
+         const { listen } = await import("@tauri-apps/api/event");
+         const unlisten = await listen<string>("d82://shortcut", (event) => handler(event.payload));
+@@ -268,6 +271,18 @@ const bridge: Bridge = IS_TAURI
+         return mockMcpStatus();
+       },
+       mcpCall: (tool, args) => mockMcpCall(tool, args ?? {}),
++      desktopMode: async (on) => {
++        try {
++          if (on && !document.fullscreenElement) {
++            await document.documentElement.requestFullscreen();
++          } else if (!on && document.fullscreenElement) {
++            await document.exitFullscreen();
++          }
++        } catch {
++          /* needs a user gesture — the web demo just ignores it */
++        }
++        return on;
++      },
+       listenShortcuts: async () => () => undefined,
+     };
+ 
+diff --git a/ui/src/styles/holo.css b/ui/src/styles/holo.css
+index 95172d3..2bf1134 100644
+--- a/ui/src/styles/holo.css
++++ b/ui/src/styles/holo.css
+@@ -140,6 +140,14 @@
+     0 24px 60px rgba(0, 0, 0, 0.5);
+ }
+ 
++/* Dragged panel floats above every other layer. */
++.holo-panel--dragging {
++  z-index: 40;
++  box-shadow:
++    0 0 0 1px color-mix(in srgb, var(--d82-accent, #22d3ee) 35%, transparent),
++    0 30px 70px rgba(0, 0, 0, 0.6);
++}
++
+ .holo-panel__header {
+   display: flex;
+   align-items: center;
+@@ -190,10 +198,26 @@
+ .holo-panel__body {
+   flex: 1;
+   display: grid;
+-  grid-template-columns: 1fr 1fr;
++  /* auto-fit: single-widget panels (AI Core, Launchpad) use the full width;
++     two-widget panels (SYSTEM, CHRONO, ENV) keep the 2-column grid. */
++  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
++  align-content: start;
+   gap: 10px;
+   padding: 12px;
+   min-height: 0;
++  overflow-y: auto;
++  overflow-x: hidden;
++  scrollbar-width: thin;
++  scrollbar-color: color-mix(in srgb, var(--d82-stroke-holo, #22d3ee) 30%, transparent) transparent;
++}
++
++.holo-panel__body::-webkit-scrollbar {
++  width: 5px;
++}
++
++.holo-panel__body::-webkit-scrollbar-thumb {
++  background: color-mix(in srgb, var(--d82-stroke-holo, #22d3ee) 30%, transparent);
++  border-radius: 4px;
+ }
+ 
+ .holo-panel__body--collapsed {
+@@ -370,7 +394,10 @@
+   background: color-mix(in srgb, var(--d82-bg, #050507) 38%, transparent);
+   border: 1px solid color-mix(in srgb, var(--d82-stroke, #1c1c28) 60%, transparent);
+   min-height: 0;
++  min-width: 0;
+   overflow: hidden;
++  /* Enables cqw units: inner text scales with the widget's real width. */
++  container-type: inline-size;
+ }
+ 
+ .widget__label {
+@@ -455,9 +482,12 @@
+ 
+ .widget--clock .widget__time {
+   font-family: var(--d82-font-mono, monospace);
+-  font-size: 40px;
++  /* Fluid: never overflows the widget — falls back to 30px without cq. */
++  font-size: 30px;
++  font-size: clamp(19px, 19cqw, 40px);
+   font-weight: 600;
+-  letter-spacing: 0.04em;
++  letter-spacing: 0.02em;
++  white-space: nowrap;
+   color: var(--d82-text, #e8f0f2);
+   line-height: 1;
+   text-shadow: 0 0 24px color-mix(in srgb, var(--d82-accent, #22d3ee) 35%, transparent);
